@@ -25,6 +25,13 @@ if __name__ == "__main__":
         proba = gnb.predict_proba(X.to_numpy())
         hardness = cld(proba, y, gnb.classes_)
 
-        print(file)
-        print(hardness.mean(), hardness.std())
-        print(np.sqrt(gnb.var_)) # Sanity check. Must be close to the SD set to the file.
+        with open(f"./db/CLD/DB-CLD-{str(file)[-7:-4]}.txt", "w") as f:
+            f.write(str(file))
+            f.write('\n')
+            f.write(str(hardness))
+            f.write('\n')
+            f.write("Mean IHM: " + str(hardness.mean()))
+            f.write('\n')
+            f.write("Hardness SD: " + str(hardness.std()))
+            f.write('\n')
+            f.write("Sanity: " + str(np.sqrt(gnb.var_)))

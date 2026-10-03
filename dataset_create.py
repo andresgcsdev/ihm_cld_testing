@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
 
     NUMBER_OF_FEATURES = 2
-    NUMBER_OF_CLUSTERS = 4
+    NUMBER_OF_CLUSTERS = 2
     NUMBER_OF_SAMPLES = 250 # By each cluster
     SEED = 5
     DATASET_PATH = './db/datasets/'
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         X, y = make_blobs(
             n_samples=[NUMBER_OF_SAMPLES for i in range(NUMBER_OF_CLUSTERS)],
             n_features=NUMBER_OF_FEATURES,
-            centers = [(x, 0) for x in range(NUMBER_OF_CLUSTERS)],
+            centers = None,
             cluster_std=cstd,
             random_state=SEED,
         )

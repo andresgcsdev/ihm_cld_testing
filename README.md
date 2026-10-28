@@ -11,7 +11,7 @@ Requires Python 3, `numpy`, `pandas` and `scikit-learn`. From the repository roo
 
 ## Datasets
 
-Generated with `make_blobs`. Files are named `DB-<cluster_std>.csv` and the label column is `target`. A larger std means more overlap (gap / std goes from 10 to 1.25).
+Generated with `make_blobs`. Files are named `DB-<cluster_std>.csv` and the label column is `target`. A larger std means more overlap (gap / std goes from 0.2 to 1.0).
 
 ## CLD
 

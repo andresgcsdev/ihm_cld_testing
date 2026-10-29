@@ -26,6 +26,7 @@ if __name__ == "__main__":
     CSV_FILES_PATH = './db/datasets/'
     CLD_PATH = './db/CLD/'
     CLD_IMG_PATH = './db/CLD/img'
+    CSV_IHM_FILES_PATH = CSV_FILES_PATH + 'IHM/'
 
     # Matplotlib parameters
     pathlib.Path(CLD_IMG_PATH).mkdir(parents=True, exist_ok=True)
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         hardness = cld(proba, y, gnb.classes_)
 
         # Saving Raw data.
-        with open(f"{CLD_PATH}DB-CLD-{str(file)[-7:-4]}.txt", "w") as f:
+        with open(f"{CLD_PATH}CLD-{file.stem}.txt", "w") as f:
             f.write(str(file))
             f.write('\n')
             f.write(str(hardness))
@@ -58,6 +59,9 @@ if __name__ == "__main__":
             f.write("Hardness SD: " + str(hardness.std()))
             f.write('\n')
             f.write("Hardness Maximum:" + str(hardness.max()))
+
+        df["ihm"] = hardness
+        df.to_csv(CSV_IHM_FILES_PATH + file.stem + ".csv", index=False)
 
         # Plotting
         Xv, yv, h = X.to_numpy(), y.to_numpy(), np.asarray(hardness)

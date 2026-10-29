@@ -61,7 +61,7 @@ if __name__ == "__main__":
             f.write("Hardness Maximum:" + str(hardness.max()))
 
         df["ihm"] = hardness
-        df.to_csv(CSV_IHM_FILES_PATH + file.stem + ".csv", index=False)
+        df.to_csv(CSV_IHM_FILES_PATH + file.stem + "-ihm.csv", index=False)
 
         # Plotting
         Xv, yv, h = X.to_numpy(), y.to_numpy(), np.asarray(hardness)

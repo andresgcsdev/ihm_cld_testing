@@ -23,13 +23,16 @@ def cld_adj(proba):
 if __name__ == "__main__":
 
     # File Paths
-    CSV_FILES_PATH = './db/datasets/'
-    CLD_PATH = './db/CLD/'
-    CLD_IMG_PATH = './db/CLD/img'
-    CSV_IHM_FILES_PATH = CSV_FILES_PATH + 'IHM/'
+    PROJECT_PATH = pathlib.Path(__file__).resolve().parent
+    CSV_FILES_PATH = PROJECT_PATH / 'db' / 'datasets'
+    CLD_PATH = PROJECT_PATH / 'db' / 'CLD'
+    CLD_IMG_PATH = CLD_PATH / 'img'
+    CSV_IHM_FILES_PATH = CSV_FILES_PATH / 'IHM'
 
     # Matplotlib parameters
-    pathlib.Path(CLD_IMG_PATH).mkdir(parents=True, exist_ok=True)
+    CLD_PATH.mkdir(parents=True, exist_ok=True)
+    CLD_IMG_PATH.mkdir(parents=True, exist_ok=True)
+    CSV_IHM_FILES_PATH.mkdir(parents=True, exist_ok=True)
     cmap = LinearSegmentedColormap.from_list("blue_red", ["blue", "red"])
     norm = Normalize(vmin=0, vmax=1)
     marker_list = ["o", "x"]
@@ -46,25 +49,37 @@ if __name__ == "__main__":
 
         gnb = GaussianNB().fit(X.to_numpy(), y.to_numpy())
         proba = gnb.predict_proba(X.to_numpy())
-        hardness = cld(proba, y, gnb.classes_)
+        hardness_actual = cld(proba, y, gnb.classes_)
+        hardness_predicted = cld_adj(proba)
 
         # Saving Raw data.
-        with open(f"{CLD_PATH}CLD-{file.stem}.txt", "w") as f:
+        with open(CLD_PATH / f"CLD-{file.stem}.txt", "w") as f:
             f.write(str(file))
             f.write('\n')
-            f.write(str(hardness))
+            f.write(str(hardness_actual))
             f.write('\n')
-            f.write("Mean IHM: " + str(hardness.mean()))
+            f.write("Mean IHM: " + str(hardness_actual.mean()))
             f.write('\n')
-            f.write("Hardness SD: " + str(hardness.std()))
+            f.write("Hardness SD: " + str(hardness_actual.std()))
             f.write('\n')
-            f.write("Hardness Maximum:" + str(hardness.max()))
+            f.write("Hardness Maximum:" + str(hardness_actual.max()))
 
-        df["ihm"] = hardness
-        df.to_csv(CSV_IHM_FILES_PATH + file.stem + "-ihm.csv", index=False)
+        with open(CLD_PATH / f"CLD_adj-{file.stem}.txt", "w") as f:
+            f.write(str(file))
+            f.write('\n')
+            f.write(str(hardness_actual))
+            f.write('\n')
+            f.write("Mean IHM: " + str(hardness_predicted.mean()))
+            f.write('\n')
+            f.write("Hardness SD: " + str(hardness_predicted.std()))
+            f.write('\n')
+            f.write("Hardness Maximum:" + str(hardness_predicted.max()))
+
+        df["ihm"] = hardness_actual
+        df.to_csv(CSV_IHM_FILES_PATH / f"{file.stem}-ihm.csv", index=False)
 
         # Plotting
-        Xv, yv, h = X.to_numpy(), y.to_numpy(), np.asarray(hardness)
+        Xv, yv, h = X.to_numpy(), y.to_numpy(), np.asarray(hardness_actual)
         markers = dict(zip(gnb.classes_, marker_list))
 
         fig, ax = plt.subplots(figsize=(12, 9))
@@ -82,5 +97,26 @@ if __name__ == "__main__":
         ax.set_title(file.stem)
 
         # Saving Plot
-        fig.savefig(f"{CLD_IMG_PATH}/DB-CLD-{file.stem}.png", dpi=160)
+        fig.savefig(CLD_IMG_PATH / f"DB-CLD-{file.stem}.png", dpi=160)
+        plt.close(fig)
+
+        # Plotting predicted hardness
+        h_predicted = np.asarray(hardness_predicted)
+        predicted_norm = Normalize(vmin=0, vmax=0.5)
+        fig, ax = plt.subplots(figsize=(12, 9))
+        for cls, marker in markers.items():
+            m = yv == cls
+            ax.scatter(Xv[m, 0], Xv[m, 1], c=h_predicted[m], cmap=cmap, norm=predicted_norm,
+                       marker=marker, **marker_style[marker])
+
+        fig.colorbar(ScalarMappable(norm=predicted_norm, cmap=cmap), ax=ax,
+                     label="Predicted hardness (CLD adjusted)")
+        ax.legend(handles=[
+            Line2D([], [], marker=mk, color="gray", linestyle="None",
+                   markersize=8, label=f"Class {c}")
+            for c, mk in markers.items()
+        ])
+        ax.set_title(f"{file.stem} - predicted hardness")
+
+        fig.savefig(CLD_IMG_PATH / f"DB-CLD-adj-{file.stem}.png", dpi=160)
         plt.close(fig)
